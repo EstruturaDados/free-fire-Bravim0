@@ -1,101 +1,116 @@
 #include <stdio.h>
 #include <string.h>
-#include <stdbool.h>
-#include <ctype.h>
 
-// Definições globais
 #define MAX_ITENS 10
-#define MAX_NOME 30
-#define MAX_TIPO 20
 
-// Estrutura do Item (Nível Novato + Prioridade do Mestre)
-typedef struct {
-    char nome[MAX_NOME];
-    char tipo[MAX_TIPO];
+// Struct representando um item da mochila
+struct Item {
+    char nome[50];
+    char tipo[50];
     int quantidade;
-    int prioridade; // 1 a 5
-} Item;
+};
 
-// Variáveis Globais de Controle
-Item mochila[MAX_ITENS];
-int totalItens = 0;
-bool ordenadoPorNome = false; // Flag para validar busca binária
-
-// --- Funções Auxiliares ---
-
-// Limpa o buffer do teclado para evitar erros no scanf/fgets
-void limparBuffer() {
-    int c;
-    while ((c = getchar()) != '\n' && c != EOF);
-}
-
-// --- Funcionalidades Nível Novato ---
-
-void adicionarItem() {
-    if (totalItens >= MAX_ITENS) {
-        printf("\n[!] A mochila está cheia! Descarte algo primeiro.\n");
-        return;
-    }
-
-    Item novoItem;
-    
-    printf("\n--- Adicionando Item ---\n");
-    printf("Nome: ");
-    scanf(" %29[^\n]", novoItem.nome); // Lê string com espaços
-    
-    printf("Tipo (ex: Arma, Cura, Municao): ");
-    scanf(" %19[^\n]", novoItem.tipo);
-    
-    printf("Quantidade: ");
-    scanf("%d", &novoItem.quantidade);
+int main() {
+    struct Item mochila[MAX_ITENS];
+    int totalItens = 0;
+    int opcao;
 
     do {
-        printf("Prioridade (1-Baixa a 5-Alta): ");
-        scanf("%d", &novoItem.prioridade);
-    } while (novoItem.prioridade < 1 || novoItem.prioridade > 5);
+        printf("\n===== MOCHILA - DESAFIO CODIGO DA ILHA =====\n");
+        printf("1. Adicionar item\n");
+        printf("2. Remover item\n");
+        printf("3. Listar itens\n");
+        printf("4. Sair\n");
+        printf("Escolha uma opcao: ");
+        scanf("%d", &opcao);
+        getchar(); // limpar buffer
 
-    mochila[totalItens] = novoItem;
-    totalItens++;
-    ordenadoPorNome = false; // Ao adicionar, a lista pode perder a ordenação
-    printf("[+] Item '%s' adicionado com sucesso!\n", novoItem.nome);
-}
+        switch(opcao) {
+            case 1: {
+                if (totalItens >= MAX_ITENS) {
+                    printf("\n⚠️ Mochila cheia! Nao e possivel adicionar mais itens.\n");
+                    break;
+                }
 
-void listarItens() {
-    if (totalItens == 0) {
-        printf("\n[!] A mochila está vazia.\n");
-        return;
-    }
+                printf("\n--- Adicionar Item ---\n");
+                printf("Nome: ");
+                fgets(mochila[totalItens].nome, 50, stdin);
+                strtok(mochila[totalItens].nome, "\n");
 
-    printf("\n--- Conteúdo da Mochila ---\n");
-    printf("%-20s | %-15s | %-3s | %-3s\n", "Nome", "Tipo", "Qtd", "Prio");
-    printf("------------------------------------------------------------\n");
-    for (int i = 0; i < totalItens; i++) {
-        printf("%-20s | %-15s | %03d | %d\n", 
-               mochila[i].nome, mochila[i].tipo, mochila[i].quantidade, mochila[i].prioridade);
-    }
-}
+                printf("Tipo: ");
+                fgets(mochila[totalItens].tipo, 50, stdin);
+                strtok(mochila[totalItens].tipo, "\n");
 
-void removerItem() {
-    char nomeAlvo[MAX_NOME];
-    printf("\nNome do item para remover: ");
-    scanf(" %29[^\n]", nomeAlvo);
+                printf("Quantidade: ");
+                scanf("%d", &mochila[totalItens].quantidade);
+                getchar();
 
-    int encontrado = -1;
-    for (int i = 0; i < totalItens; i++) {
-        if (strcmp(mochila[i].nome, nomeAlvo) == 0) {
-            encontrado = i;
-            break;
+                totalItens++;
+
+                printf("\n✔ Item adicionado com sucesso!\n");
+                break;
+            }
+
+            case 2: {
+                if (totalItens == 0) {
+                    printf("\n⚠️ Nenhum item na mochila para remover.\n");
+                    break;
+                }
+
+                char nomeRemover[50];
+                printf("\n--- Remover Item ---\n");
+                printf("Nome do item: ");
+                fgets(nomeRemover, 50, stdin);
+                strtok(nomeRemover, "\n");
+
+                int encontrado = -1;
+                for (int i = 0; i < totalItens; i++) {
+                    if (strcmp(mochila[i].nome, nomeRemover) == 0) {
+                        encontrado = i;
+                        break;
+                    }
+                }
+
+                if (encontrado == -1) {
+                    printf("\n❌ Item nao encontrado!\n");
+                } else {
+                    // Desloca itens para preencher o espaço removido
+                    for (int i = encontrado; i < totalItens - 1; i++) {
+                        mochila[i] = mochila[i + 1];
+                    }
+                    totalItens--;
+                    printf("\n✔ Item removido com sucesso!\n");
+                }
+                break;
+            }
+
+            case 3: {
+                printf("\n--- Itens na Mochila ---\n");
+
+                if (totalItens == 0) {
+                    printf("A mochila esta vazia.\n");
+                } else {
+                    printf("%-20s %-20s %-10s\n", "Nome", "Tipo", "Quantidade");
+                    printf("-------------------------------------------------------\n");
+                    for (int i = 0; i < totalItens; i++) {
+                        printf("%-20s %-20s %-10d\n",
+                               mochila[i].nome,
+                               mochila[i].tipo,
+                               mochila[i].quantidade);
+                    }
+                }
+                break;
+            }
+
+            case 4:
+                printf("\nSaindo... Ate mais, guerreiro!\n");
+                break;
+
+            default:
+                printf("\n❌ Opcao invalida! Tente novamente.\n");
         }
-    }
 
-    if (encontrado != -1) {
-        // Move os itens subsequentes para trás para preencher o buraco
-        for (int i = encontrado; i < totalItens - 1; i++) {
-            mochila[i] = mochila[i + 1];
-        }
-        totalItens--;
-        printf("[-] Item '%s' removido.\n", nomeAlvo);
-    } else {
-        printf("[!] Item não encontrado.\n");
-    }
+    } while (opcao != 4);
+
+    return 0;
 }
